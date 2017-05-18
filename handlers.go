@@ -3,24 +3,14 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"html"
-	"log"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/mux"
 )
 
-func main() {
-
-	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/", Index)
-	router.HandleFunc("/tools", ToolIndex)
-	log.Fatal(http.ListenAndServe(":8080", router))
-}
-
 func Index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
+	fmt.Fprintln(w, "Welcome!")
 }
 
 func ToolIndex(w http.ResponseWriter, r *http.Request) {
@@ -50,7 +40,11 @@ func ToolIndex(w http.ResponseWriter, r *http.Request) {
 			BorrowedOn: newTime,
 		},
 	}
-	// fmt.Printf(tools[1].name)
 	json.NewEncoder(w).Encode(tools)
-	// fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
+}
+
+func ToolShow(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	toolId := vars["toolId"]
+	fmt.Fprintln(w, "Tool show:", toolId)
 }

@@ -1,8 +1,8 @@
-# Tool API
+# Tool Lending API
 ### Simple CRUD API Using Golang
 
 ## Overview
-Simple JSON API to manage tools in your shop and track who has borrowed tools from you.
+Simple JSON API to keep track of your tools and who has borrowed them (deadbeats!).
 
 ## Goal
 This is a quick experimental project to explore the features and syntax of the Go language.
@@ -19,5 +19,5 @@ This is a quick experimental project to explore the features and syntax of the G
 
 ### Execution
 1. Start server
-> $ go run server.go
+> $ go run *.go
 2. Browse to http://localhost:8080
