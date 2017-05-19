@@ -1,12 +1,18 @@
 package toolexchange
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
+)
+
+const (
+	DB_NAME = "tools-rest-api-dev"
 )
 
 func Index(w http.ResponseWriter, r *http.Request) {
@@ -14,31 +20,25 @@ func Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func ToolIndex(w http.ResponseWriter, r *http.Request) {
-	newTime, e := time.Parse("Mon Jan 2 15:04:05 -0700 MST 2006", "Mon Jan 2 15:04:05 -0800 PST 2017")
-	fmt.Println(e)
+	dbinfo := fmt.Sprintf("dbname=%s sslmode=disable", DB_NAME)
+	db, err := sql.Open("postgres", dbinfo)
+	checkErr(err)
 
-	tools := Tools{
-		Tool{
-			Id:         1,
-			Name:       "hammer",
-			ImageURL:   "http://lghttp.18445.nexcesscdn.net/808F9E/mage/media/catalog/product/cache/1/thumbnail/550x/9df78eab33525d08d6e5fb8d27136e95/v/5/v508_hammer.jpg",
-			IsBorrowed: true,
-			BorrowedOn: newTime,
-		},
-		Tool{
-			Id:         2,
-			Name:       "hand saw",
-			ImageURL:   "https://db1736767dbd5e7094bb-d61bbc5d0b342a54145a236e2d5d1ebf.ssl.cf4.rackcdn.com/Product-800x800/3588e25d-8421-4c7f-8402-1ecef1daf256.jpg",
-			IsBorrowed: false,
-			BorrowedOn: time.Time{},
-		},
-		Tool{
-			Id:         3,
-			Name:       "hammer",
-			ImageURL:   "http://lghttp.18445.nexcesscdn.net/808F9E/mage/media/catalog/product/cache/1/thumbnail/550x/9df78eab33525d08d6e5fb8d27136e95/v/5/v508_hammer.jpg",
-			IsBorrowed: true,
-			BorrowedOn: newTime,
-		},
+	rows, err := db.Query("SELECT id, name, image_url, is_borrowed, borrowed_on  FROM tools")
+
+	var tools []Tool
+
+	for rows.Next() {
+		var ID int
+		var Name string
+		var ImageURL string
+		var IsBorrowed bool
+		var BorrowedOn time.Time
+		err = rows.Scan(&ID, &Name, &ImageURL, &IsBorrowed, &BorrowedOn)
+		checkErr(err)
+
+		tool := Tool{ID, Name, ImageURL, IsBorrowed, BorrowedOn}
+		tools = append(tools, tool)
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -50,6 +50,118 @@ func ToolIndex(w http.ResponseWriter, r *http.Request) {
 
 func ToolShow(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	toolId := vars["toolId"]
-	fmt.Fprintln(w, "Tool show:", toolId)
+	ID := vars["Id"]
+	dbinfo := fmt.Sprintf("dbname=%s sslmode=disable", DB_NAME)
+	db, err := sql.Open("postgres", dbinfo)
+	checkErr(err)
+
+	rows, err := db.Query("SELECT id, name, image_url, is_borrowed, borrowed_on FROM tools WHERE id = $1", ID)
+
+	var tools []Tool
+
+	for rows.Next() {
+		var ID int
+		var Name string
+		var ImageURL string
+		var IsBorrowed bool
+		var BorrowedOn time.Time
+		err = rows.Scan(&ID, &Name, &ImageURL, &IsBorrowed, &BorrowedOn)
+		checkErr(err)
+
+		tool := Tool{ID, Name, ImageURL, IsBorrowed, BorrowedOn}
+		tools = append(tools, tool)
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(tools); err != nil {
+		panic(err)
+	}
+}
+
+func ToolUpdate(w http.ResponseWriter, r *http.Request) {
+
+	decoder := json.NewDecoder(r.Body)
+	var tool Tool
+	err := decoder.Decode(&tool)
+	checkErr(err)
+	defer r.Body.Close()
+
+	vars := mux.Vars(r)
+	ID := vars["Id"]
+	dbinfo := fmt.Sprintf("dbname=%s sslmode=disable", DB_NAME)
+	db, err := sql.Open("postgres", dbinfo)
+	checkErr(err)
+
+	rows, err := db.Query("UPDATE tools SET name = $1, image_url = $2, is_borrowed = $3, borrowed_on = $4 WHERE id = $5", tool.Name, tool.ImageURL, tool.IsBorrowed, tool.BorrowedOn, ID)
+	checkErr(err)
+
+	rows, err = db.Query("SELECT id, name, image_url, is_borrowed, borrowed_on FROM tools WHERE id = $1", ID)
+	checkErr(err)
+
+	var tools []Tool
+
+	for rows.Next() {
+		var ID int
+		var Name string
+		var ImageURL string
+		var IsBorrowed bool
+		var BorrowedOn time.Time
+		err = rows.Scan(&ID, &Name, &ImageURL, &IsBorrowed, &BorrowedOn)
+		checkErr(err)
+
+		tool := Tool{ID, Name, ImageURL, IsBorrowed, BorrowedOn}
+		tools = append(tools, tool)
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(tools); err != nil {
+		panic(err)
+	}
+}
+
+func ToolInsert(w http.ResponseWriter, r *http.Request) {
+
+	decoder := json.NewDecoder(r.Body)
+	var tool Tool
+	err := decoder.Decode(&tool)
+	checkErr(err)
+	defer r.Body.Close()
+
+	dbinfo := fmt.Sprintf("dbname=%s sslmode=disable", DB_NAME)
+	db, err := sql.Open("postgres", dbinfo)
+	checkErr(err)
+
+	var lastInsertId int
+	err = db.QueryRow("INSERT INTO tools (name, image_URL, is_borrowed, borrowed_on) values ($1, $2, $3, $4) returning id;", tool.Name, tool.ImageURL, tool.IsBorrowed, tool.BorrowedOn).Scan(&lastInsertId)
+	checkErr(err)
+
+	row := db.QueryRow("SELECT id, name, image_url, is_borrowed, borrowed_on FROM tools WHERE id = $1", lastInsertId)
+	checkErr(err)
+
+	var tools []Tool
+
+	var ID int
+	var Name string
+	var ImageURL string
+	var IsBorrowed bool
+	var BorrowedOn time.Time
+	err = row.Scan(&ID, &Name, &ImageURL, &IsBorrowed, &BorrowedOn)
+	checkErr(err)
+
+	tool = Tool{ID, Name, ImageURL, IsBorrowed, BorrowedOn}
+	tools = append(tools, tool)
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(tools); err != nil {
+		panic(err)
+	}
+}
+
+func checkErr(err error) {
+	if err != nil {
+		panic(err)
+	}
 }

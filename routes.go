@@ -25,9 +25,21 @@ var routes = Routes{
 		ToolIndex,
 	},
 	Route{
-		"TodoShow",
+		"ToolShow",
 		"GET",
-		"/tools/{toolId}",
+		"/tools/{Id}",
 		ToolShow,
+	},
+	Route{
+		"ToolUpdate",
+		"PUT",
+		"/tools/{Id}",
+		ToolUpdate,
+	},
+	Route{
+		"ToolInsert",
+		"POST",
+		"/tools",
+		ToolInsert,
 	},
 }

@@ -49,7 +49,7 @@ func main() {
 	db.QueryRow("DELETE FROM tools;")
 
 	for _, el := range tools {
-		db.QueryRow("INSERT INTO tools(name, is_borrowed, borrowed_on) VALUES($1, $2, $3) returning id;", el.Name, el.IsBorrowed, el.BorrowedOn)
+		db.QueryRow("INSERT INTO tools(name, image_url, is_borrowed, borrowed_on) VALUES($1, $2, $3, $4) returning id;", el.Name, el.ImageURL, el.IsBorrowed, el.BorrowedOn)
 	}
 	checkErr(err)
 }

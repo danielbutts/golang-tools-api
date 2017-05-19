@@ -17,6 +17,11 @@ This is a quick experimental project to explore the features and syntax of the G
 > $ go get github.com/gorilla/mux
 3. install pq
 > $ go get github.com/lib/pq
+4. create database
+> $ createdb {database name}
+5. run migrations and seeds
+> $ go run cmd/migration/migrate.go
+> $ go run cmd/seed/seed.go
 
 ### Execution
 1. Start server
