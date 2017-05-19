@@ -42,4 +42,10 @@ var routes = Routes{
 		"/tools",
 		ToolInsert,
 	},
+	Route{
+		"ToolDelete",
+		"DELETE",
+		"/tools/{Id}",
+		ToolDelete,
+	},
 }

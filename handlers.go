@@ -160,6 +160,37 @@ func ToolInsert(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func ToolDelete(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	ID := vars["Id"]
+
+	dbinfo := fmt.Sprintf("dbname=%s sslmode=disable", DB_NAME)
+	db, err := sql.Open("postgres", dbinfo)
+	checkErr(err)
+
+	var DeletedID int
+	var Name string
+	var ImageURL string
+	var IsBorrowed bool
+	var BorrowedOn time.Time
+	row := db.QueryRow("DELETE FROM tools WHERE id = $1 RETURNING id, name, image_url, is_borrowed, borrowed_on;", ID)
+
+	err = row.Scan(&ID, &Name, &ImageURL, &IsBorrowed, &BorrowedOn)
+	checkErr(err)
+
+	var tools []Tool
+
+	tool := Tool{DeletedID, Name, ImageURL, IsBorrowed, BorrowedOn}
+	tools = append(tools, tool)
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(tools); err != nil {
+		panic(err)
+	}
+}
+
 func checkErr(err error) {
 	if err != nil {
 		panic(err)
