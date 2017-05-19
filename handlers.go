@@ -5,14 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
-)
-
-const (
-	DB_NAME = "tools-rest-api-dev"
 )
 
 func Index(w http.ResponseWriter, r *http.Request) {
@@ -20,6 +17,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func ToolIndex(w http.ResponseWriter, r *http.Request) {
+	DB_NAME := os.Getenv("DATABASE_URL")
 	dbinfo := fmt.Sprintf("dbname=%s sslmode=disable", DB_NAME)
 	db, err := sql.Open("postgres", dbinfo)
 	checkErr(err)
@@ -49,6 +47,7 @@ func ToolIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 func ToolShow(w http.ResponseWriter, r *http.Request) {
+	DB_NAME := os.Getenv("DATABASE_URL")
 	vars := mux.Vars(r)
 	ID := vars["Id"]
 	dbinfo := fmt.Sprintf("dbname=%s sslmode=disable", DB_NAME)
@@ -80,7 +79,7 @@ func ToolShow(w http.ResponseWriter, r *http.Request) {
 }
 
 func ToolUpdate(w http.ResponseWriter, r *http.Request) {
-
+	DB_NAME := os.Getenv("DATABASE_URL")
 	decoder := json.NewDecoder(r.Body)
 	var tool Tool
 	err := decoder.Decode(&tool)
@@ -122,6 +121,7 @@ func ToolUpdate(w http.ResponseWriter, r *http.Request) {
 }
 
 func ToolInsert(w http.ResponseWriter, r *http.Request) {
+	DB_NAME := os.Getenv("DATABASE_URL")
 
 	decoder := json.NewDecoder(r.Body)
 	var tool Tool
@@ -161,6 +161,7 @@ func ToolInsert(w http.ResponseWriter, r *http.Request) {
 }
 
 func ToolDelete(w http.ResponseWriter, r *http.Request) {
+	DB_NAME := os.Getenv("DATABASE_URL")
 
 	vars := mux.Vars(r)
 	ID := vars["Id"]

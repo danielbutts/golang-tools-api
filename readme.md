@@ -9,7 +9,15 @@ This is a quick experimental project to explore the features and syntax of the G
 
 ### Dependencies
 **gorilla/mux** - Request router and dispatcher package (https://github.com/gorilla/mux)
+**github.com/lib/pq** - Postgres driver implementation for database/sql (https://github.com/lib/pq)
+**github.com/DavidHuie/gomigrate** - Migration package for postgres (https://github.com/DavidHuie/gomigrate)
 
+### Routes
+**GET /tools** - Index route for Tool resource
+**GET /tools/{id}** - Show route for specific Tool
+**PUT /tools/{id}** - Update route for modifying and existing Tool
+**POST /tools** - Insert route for adding a new Tool
+**DELETE /tools/{id}** - Delete route for destroying specific Tool
 
 ### Setup
 1. install Go (http://sourabhbajaj.com/mac-setup/Go/README.html)

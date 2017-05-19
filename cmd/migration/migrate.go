@@ -11,11 +11,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const (
-	DB_NAME = "tools-rest-api-dev"
-)
-
 func main() {
+	DB_NAME := os.Getenv("DATABASE_URL")
 	var err error
 	if len(os.Args) == 1 {
 		err = errors.New("'up' or 'down' must be provided as an argument")
