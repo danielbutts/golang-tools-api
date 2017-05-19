@@ -15,7 +15,8 @@ This is a quick experimental project to explore the features and syntax of the G
 1. install Go (http://sourabhbajaj.com/mac-setup/Go/README.html)
 2. install Gorilla
 > $ go get github.com/gorilla/mux
-
+3. install pq
+> $ go get github.com/lib/pq
 
 ### Execution
 1. Start server
